@@ -1,7 +1,9 @@
 import { serve } from 'http://deno.land/std/http/server.ts'
+import { Router } from './router.ts'
 
 export type ServerOptions = {
   port: number
+  router: Router
 }
 
 export class Server {
@@ -21,9 +23,33 @@ export class Server {
     })
     console.log(`ready - http://localhost:${this.options.port}`)
     for await (const req of s) {
-      req.respond({
-        body: `hello`,
-      })
+      const ctx: ServerHandlerContext = {
+        params: {},
+        response: {
+          body: '',
+        },
+      }
+      const matched = this.options.router.find(req.method as any, req.url)
+      if (matched.length > 0) {
+        for (const m of matched) {
+          ctx.params = m.params
+          for (const handle of m.route.handlers) {
+            handle(ctx)
+          }
+        }
+        req.respond({
+          body: ctx.response.body,
+        })
+      }
     }
+  }
+}
+
+export type ServerHandlerContext = {
+  params: {
+    [k: string]: string
+  }
+  response: {
+    body: string
   }
 }
