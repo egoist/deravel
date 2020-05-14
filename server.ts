@@ -31,12 +31,15 @@ export class Server {
       }
       const matched = this.options.router.find(req.method as any, req.url)
       if (matched.length > 0) {
-        for (const m of matched) {
-          ctx.params = m.params
-          for (const handle of m.route.handlers) {
-            handle(ctx)
+        let i = 0
+        const next = (error?: Error) => {
+          const m = matched[i++]
+          if (m) {
+            ctx.params = m.params
+            m.handler(ctx, next)
           }
         }
+        next()
         req.respond({
           body: ctx.response.body,
         })
