@@ -1,27 +1,27 @@
 import { serve } from 'http://deno.land/std/http/server.ts'
 import { Router } from './router.ts'
 
-export type ServerOptions = {
+export type ListenOptions = {
   port: number
-  router: Router
+  hostname?: string
 }
 
-export class Server {
-  options: ServerOptions
-
-  constructor(options: ServerOptions) {
-    this.options = options
+export class Server extends Router {
+  constructor() {
+    super()
   }
 
-  static create(options: ServerOptions) {
-    return new Server(options)
-  }
-
-  async start() {
+  async listen(options: ListenOptions) {
+    const hostname = options.hostname || '0.0.0.0'
     const s = serve({
-      port: this.options.port,
+      port: options.port,
+      hostname,
     })
-    console.log(`ready - http://localhost:${this.options.port}`)
+    console.log(
+      `ready - http://${hostname === '0.0.0.0' ? 'localhost' : hostname}:${
+        options.port
+      }`
+    )
     for await (const req of s) {
       const ctx: ServerHandlerContext = {
         params: {},
@@ -29,14 +29,17 @@ export class Server {
           body: '',
         },
       }
-      const matched = this.options.router.find(req.method as any, req.url)
+      const matched = this.find(req.method as any, req.url)
       if (matched.length > 0) {
-        for (const m of matched) {
-          ctx.params = m.params
-          for (const handle of m.route.handlers) {
-            handle(ctx)
+        let i = 0
+        const next = async (error?: Error) => {
+          const m = matched[i++]
+          if (m) {
+            ctx.params = m.params
+            await m.handler(ctx, next)
           }
         }
+        await next()
         req.respond({
           body: ctx.response.body,
         })
