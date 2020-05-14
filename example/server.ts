@@ -1,18 +1,21 @@
-import { serve, Router } from '../mod.ts'
+import { Server } from '../mod.ts'
 
-const router = new Router()
+const server = new Server()
 
-router.get('/', (ctx) => {
+server.get('/', (ctx) => {
   ctx.response.body = 'homepage'
 })
 
-router.get('/user/:id', (ctx, next) => {
-  next()
-}, (ctx) => {
-  ctx.response.body = `hello ${ctx.params.id}`
-})
+server.get(
+  '/user/:id',
+  (ctx, next) => {
+    next()
+  },
+  (ctx) => {
+    ctx.response.body = `hello ${ctx.params.id}`
+  }
+)
 
-serve({
+await server.listen({
   port: 3000,
-  router
 })
