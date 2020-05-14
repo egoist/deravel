@@ -1,12 +1,12 @@
-import { Server } from '../mod.ts'
+import { Application } from '../mod.ts'
 
-const server = new Server()
+const app = new Application()
 
-server.get('/', (ctx) => {
+app.get('/', (ctx) => {
   ctx.response.body = 'homepage'
 })
 
-server.get(
+app.get(
   '/user/:id',
   (ctx, next) => {
     next()
@@ -16,6 +16,6 @@ server.get(
   }
 )
 
-await server.listen({
+await app.listen({
   port: 3000,
 })

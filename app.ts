@@ -6,7 +6,7 @@ export type ListenOptions = {
   hostname?: string
 }
 
-export class Server extends Router {
+export class Application extends Router {
   constructor() {
     super()
   }
