@@ -1,19 +1,15 @@
+import * as path from 'https://deno.land/std/path/mod.ts'
 import { Application } from '../mod.ts'
 
-const app = new Application()
+const app = new Application(path.dirname(path.fromFileUrl(import.meta.url)))
 
 app.get('/', (ctx) => {
   ctx.response.body = 'homepage'
 })
 
 app.get(
-  '/user/:id',
-  (ctx, next) => {
-    next()
-  },
-  (ctx) => {
-    ctx.response.body = `hello ${ctx.params.id}`
-  }
+  '/user/:user',
+  'UserController.show'
 )
 
 await app.listen({

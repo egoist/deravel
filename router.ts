@@ -2,11 +2,18 @@ import {
   pathToRegexp,
   Key as PathKey,
 } from 'https://denopkg.com/pillarjs/path-to-regexp@v6.1.0/src/index.ts'
-import { ServerHandlerContext } from './server.ts'
+import { HttpServerContext } from './app.ts'
 
 export type NextFunction = (error?: Error) => void
 
-export type RouteHandler = (ctx: ServerHandlerContext, next: NextFunction) => void | Promise<void>
+/**
+ * Route handler
+ * Use a string to reference controller method, e.g.:
+ * `'UserController.show'`
+ */
+export type RouteHandler = string | RouteHandlerFunction
+
+export type RouteHandlerFunction = ((ctx: HttpServerContext, next: NextFunction) => void | Promise<void>)
 
 export type Route = {
   path: string
